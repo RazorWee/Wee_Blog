@@ -38,18 +38,22 @@ from flask_wtf import CSRFProtect
 from functools import wraps
 import hashlib
 import smtplib
+import os
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import date
 post_date= date.today().strftime("%d %B %Y")
 #from flask_gravatar import Gravatar # Note : outdated , use the function below
 # IMPT : To use bootstrap5 - do not install flask-bootstrap - install Bootstrap-Flask
 
-#----- Variables -----------------------------
-my_email = "wee1.618@gmail.com"
-password = "kcgxacvlxjnfmkam"
-#----------------------------------------------
+# Access variables ===============
+my_email = os.getenv("my_email")
+password = os.getenv("password")
+secret_key = os.getenv("secret_key")
+#===================================
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = secret_key
 bootstrap = Bootstrap5(app)
 csrf=CSRFProtect(app)
 ckeditor = CKEditor(app)
