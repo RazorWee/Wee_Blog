@@ -1,0 +1,42 @@
+<!-- Outdated method -->
+{# {% extends 'bootstrap/base.html' %} #}
+{# {% import "bootstrap/wtf.html" as wtf %} #}
+
+{% extends 'base.html' %}
+{% from 'bootstrap/form.html' import render_form %}
+
+
+{% block content %}
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/register-bg.jpeg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>Register</h1>
+            <span class="subheading">Start Contributing to the Blog!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-md-10 mx-auto">
+        {{ render_form(form, novalidate=True) }}
+
+        <!--Outdated method -->
+       {# {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }} #}
+        <br>
+        <h6 style="font-weight: normal; color: #00657b;">Note: Password must be at least 8 characters, including one letter, one number, and one special character</h6>
+
+      </div>
+    </div>
+  </div>
+
+{% include "footer.html" %}
+{% endblock %}
