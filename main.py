@@ -1,31 +1,55 @@
 '''
-Note that we used Bootstrap5 and not Bootstrap. Hence we need to make the following changes:
-1) Download install Bootstrap_flask and not flask_bootstrap
-2) In main.py :
-    replace ->
-        from flask_bootstrap import Bootstrap
-        bootstrap = Bootstrap(app)
-    with -->
-        from flask_bootstrap import Bootstrap5
-        bootstrap = Bootstrap5(app)
-2) Create a base html
-3) In register.html :
-    {#{% extends 'bootstrap/base.html' %}#}
-    {% extends 'base.html' %}
-    {#% import "bootstrap/wtf.html" as wtf %}#}
-    {% from 'bootstrap/form.html' import render_form %}
+<<< From Local to Remote >>>
 
-4) In the body of register.html :
-        {{ render_form(form, novalidate=True) }}
-        <!--Outdated method -->
-       {# {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }} #}
+1) Environmental Variables
+    - import os, import dotenv import load_dotenv, load dotenv()
+    - create .env in terminal
+    - key in all the secret variables in .env
 
-5) Note that we have used csrf protection. For the "contact" we exempt this by using "@csrf.exempt"
+2) Gitignore
+    - create .gitignore
+    - go to gitignore.io website and key in "Flask"
+    - copy all text and paste into .gitignore
+    - Ensure these files are included :  .env , .DS_Store
 
-6) See the use of "cascade" in Comment relationship with BlogPost so that we can delete post which have comments.
+3) Git
+    - git init (initialise a Git)
+    - git add <file> or git add .
+    - git commit -m "message"
+    - git status
+    - git log
+    - git checkout <id> <- temporarily move back to commit
+    - git revert <id> <- revert by creating new commit
+        eg. git revert C2 --> C3, C4, remains same, C5 created but undo anything from C2
+    - git reset <id>  <- undo the commit by deleting commit
+        eg. git reset C2 --> restore to C2, and delete C3, C4, etc.
+
+
+4) Remote GitHub
+    - click on VCS on menu bar
+    - Enable Version Control
+    - when pop up screen - make sure you choose 'Git'
+    - Go to VCS or GitHub , and click on "+" to "Log in via GitHub"
+    - *  new GitHub repo by going to VCS -> Import into Version Control -> Share Project on GitHub
+            Repository name : anything
+            Remote : origin <-- do not change
+            Description : anything
+    - * existng GitHub repo , just click "push"
+
+5) gunicorn
+    - pip install gunicorn
+    - manually add "Gunicorn==21.2.0" into requirements.txt
+
+6) PostgreSQL
+    - pip install psycopg2-binary
+    - manually add "Psycopg2-binary==2.9.9" into requirements.txt
+    - modify 2 parts of main.py :
+        a) ##CONNECT TO DB <<<< For sqlite only >>>>>
+        b) ## <<<<< Creating DB on Sqlite >>>>>>>
+
+
 
 '''
-
 from flask import Flask, render_template, redirect, url_for, flash, abort,request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
@@ -43,7 +67,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from datetime import date
 post_date= date.today().strftime("%d %B %Y")
-#from flask_gravatar import Gravatar # Note : outdated , use the function below
+
 # IMPT : To use bootstrap5 - do not install flask-bootstrap - install Bootstrap-Flask
 
 # Access variables ===============
@@ -58,11 +82,24 @@ bootstrap = Bootstrap5(app)
 csrf=CSRFProtect(app)
 ckeditor = CKEditor(app)
 
-##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+##CONNECT TO DB <<<< For sqlite only >>>>>
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# db = SQLAlchemy(app)
 
+##CONNECT TO DB <<<< For both sqlite and postresql use >>>>>
+# Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
+if 'DATABASE_URL' in os.environ:
+    # Replace "postgres://" with "postgresql://", if present
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+else:
+    # Default to SQLite if DATABASE_URL is not set
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+############################
 
 ## LOGIN-MANGAGER
 login_manager = LoginManager()
@@ -148,9 +185,16 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
     parent_post = relationship("BlogPost", back_populates="comments")
 
+## <<<<< Creating DB on Sqlite >>>>>>>
 ## Line below only required once, when creating DB.
 # with app.app_context():
 #     db.create_all()
+
+## <<<<<< Creating DB on both Sqlite and Postresql >>>>>>>
+# Create tables if running in a local environment
+if 'DATABASE_URL' not in os.environ:
+    with app.app_context():
+        db.create_all()
 
 #####################################################
 # To replace "from flask_gravatar import Gravatar "
@@ -371,6 +415,10 @@ def send_email(name,email,phone,message):
                             msg= message
                             )
 
+#When you run the script directly (python main.py),
+# it starts the Flask development server. When deployed on Render with Gunicorn,
+# the if __name__ == "__main__": block is ignored, and Gunicorn is used to serve the application.
 if __name__ == "__main__":
     app.debug = True
     app.run(host='0.0.0.0', port=5000)
+
