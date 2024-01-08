@@ -132,8 +132,8 @@ def admin_only(f):
 class User(UserMixin, db.Model):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    email = db.Column(db.String(250), unique=True)
+    password = db.Column(db.String(250))
     name = db.Column(db.String(100))
 
     # Establishing User(Parent/One) - BlogPost(Child/Many)
@@ -419,6 +419,7 @@ def send_email(name,email,phone,message):
 # it starts the Flask development server. When deployed on Render with Gunicorn,
 # the if __name__ == "__main__": block is ignored, and Gunicorn is used to serve the application.
 if __name__ == "__main__":
-    app.debug = True
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
+    # app.debug = True
+    # app.run(host='0.0.0.0', port=5000)
 
