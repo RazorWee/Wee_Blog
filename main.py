@@ -137,7 +137,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(100))
 
     # Establishing User(Parent/One) - BlogPost(Child/Many)
-    blog_posts = db.relationship('BlogPost', back_populates='author', lazy=True)
+    blog_posts = db.relationship("BlogPost", back_populates="author", lazy=True)
     ## Below is the old method - backref
     ## blog_posts = db.relationship('BlogPost', backref='author', lazy=True)
 
@@ -163,8 +163,8 @@ class BlogPost(db.Model):
     img_url = db.Column(db.String(250), nullable=False)
 
     # Establishing the BlogPost(Child/Many) - User(Parent/One)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id')) #<- must use the table name eg. "users"
-    author = db.relationship('User', back_populates='blog_posts')
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id")) #<- must use the table name eg. "users"
+    author = db.relationship("User", back_populates="blog_posts")
     ## ## Below is the old method - backref
     ##author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
