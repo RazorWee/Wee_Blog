@@ -91,7 +91,8 @@ ckeditor = CKEditor(app)
 # Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
 if 'DATABASE_URL' in os.environ:
     # Replace "postgres://" with "postgresql://", if present
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
+    # app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL'].replace("postgres://", "postgresql://", 1)
 else:
     # Default to SQLite if DATABASE_URL is not set
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
