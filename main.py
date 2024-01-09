@@ -190,16 +190,16 @@ class Comment(db.Model):
 
 ## <<<<< Creating DB on Sqlite >>>>>>>
 ## Line below only required once, when creating DB.
-with app.app_context():
-    db.create_all()
+# with app.app_context():
+#     db.create_all()
 
 ## <<<<<< Creating DB on both Sqlite and Postresql >>>>>>>
 # Create tables if running in a local environment
-'''
-if 'DATABASE_URL' not in os.environ:
-    with app.app_context():
-        db.create_all()
-'''
+
+# if 'DATABASE_URL' not in os.environ:
+#     with app.app_context():
+#         db.create_all()
+
 #####################################################
 # To replace "from flask_gravatar import Gravatar "
 # For more details and options , see https://docs.gravatar.com/general/images/
