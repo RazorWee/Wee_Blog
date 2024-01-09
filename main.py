@@ -181,12 +181,28 @@ class Comment(db.Model):
     date = db.Column(db.String(250), nullable=False)
 
     # Establishing the Comment(Child/Many) - User(Parent/One)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # Must use the table name, e.g., "users"
+    comment_author = relationship("User", back_populates="comments")
+
+    # Establishing the Comment(Child/Many) - BlogPost(Parent/One)
+    post_id = db.Column(db.Integer,
+                        db.ForeignKey("blog_posts.id", ondelete="CASCADE", deferrable=True, initially="DEFERRED"),
+                        nullable=False)
+    parent_post = relationship("BlogPost", back_populates="comments")
+
+
+'''
+    # Establishing the Comment(Child/Many) - User(Parent/One)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id")) #<- must use the table name eg. "users"
     comment_author = relationship("User", back_populates="comments")
 
     # Establishing the Comment(Child/Many) - BlogPost(Parent/One)
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
     parent_post = relationship("BlogPost", back_populates="comments")
+
+'''
+
+
 
 ## <<<<< Creating DB on Sqlite >>>>>>>
 ## Line below only required once, when creating DB.
