@@ -89,14 +89,17 @@ ckeditor = CKEditor(app)
 
 ##CONNECT TO DB <<<< For both sqlite and postresql use >>>>>
 # Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
+'''
 if os.getenv('DATABASE_URL'):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 else:
     # Default to SQLite if DATABASE_URL is not set
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+db = SQLAlchemy(app)
+'''
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL",  "sqlite:///blog.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 ############################
@@ -192,10 +195,11 @@ class Comment(db.Model):
 
 ## <<<<<< Creating DB on both Sqlite and Postresql >>>>>>>
 # Create tables if running in a local environment
+'''
 if 'DATABASE_URL' not in os.environ:
     with app.app_context():
         db.create_all()
-
+'''
 #####################################################
 # To replace "from flask_gravatar import Gravatar "
 # For more details and options , see https://docs.gravatar.com/general/images/
