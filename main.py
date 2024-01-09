@@ -63,8 +63,11 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_wtf import CSRFProtect
 from functools import wraps
 import hashlib
-import smtplib
+# import smtplib
 import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+
 from dotenv import load_dotenv
 load_dotenv()
 from datetime import date
@@ -74,8 +77,9 @@ post_date= date.today().strftime("%d %B %Y")
 
 # Access variables ===============
 my_email = os.getenv("my_email")
-password = os.getenv("password")
+# password = os.getenv("password")
 secret_key = os.getenv("secret_key")
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 #===================================
 
 app = Flask(__name__)
@@ -429,13 +433,31 @@ def contact():
         return render_template("contact.html", msg_sent=False)
 
 def send_email(name,email,phone,message):
-    message = f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}\n Message: {message}"
-    with smtplib.SMTP("smtp.gmail.com") as connection:
-        connection.starttls()
-        connection.login(user=my_email, password=password)
-        connection.sendmail(from_addr=my_email, to_addrs=my_email,
-                            msg= message
-                            )
+    message = Mail(
+        from_email=my_email,
+        to_emails=my_email,
+        subject=f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}",
+        html_content=f'<strong>{message}</strong>')
+    try:
+        sg = SendGridAPIClient(os.environ.get(SENDGRID_API_KEY))
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
+
+
+
+
+    # message = f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}\n Message: {message}"
+    # with smtplib.SMTP("smtp.gmail.com") as connection:
+    #     connection.starttls()
+    #     connection.login(user=my_email, password=password)
+    #     connection.sendmail(from_addr=my_email, to_addrs=my_email,
+    #                         msg= message
+    #                         )
+
 
 #When you run the script directly (python main.py),
 # it starts the Flask development server. When deployed on Render with Gunicorn,
