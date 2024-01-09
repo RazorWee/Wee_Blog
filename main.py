@@ -436,8 +436,8 @@ def send_email(name,email,phone,message):
     message = Mail(
         from_email=my_email,
         to_emails=my_email,
-        subject=f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}",
-        html_content=f'<strong>{message}</strong>')
+        subject=f" Wee's Blog - Someone trying to contact you.",
+        html_content=f'<strong>Name : {name}<br>Email : {email}<br>Phone : {phone}<br><br>Message: <br>{message}</strong>')
     try:
         sg = SendGridAPIClient(os.environ.get(SENDGRID_API_KEY))
         response = sg.send(message)
