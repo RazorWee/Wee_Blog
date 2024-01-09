@@ -89,7 +89,7 @@ ckeditor = CKEditor(app)
 
 ##CONNECT TO DB <<<< For both sqlite and postresql use >>>>>
 # Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
-'''
+
 if os.getenv('DATABASE_URL'):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 else:
@@ -101,7 +101,7 @@ db = SQLAlchemy(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL",  "sqlite:///blog.db")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-
+'''
 ############################
 
 ## LOGIN-MANGAGER
