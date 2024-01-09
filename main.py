@@ -190,8 +190,8 @@ class Comment(db.Model):
 
 ## <<<<< Creating DB on Sqlite >>>>>>>
 ## Line below only required once, when creating DB.
-# with app.app_context():
-#     db.create_all()
+with app.app_context():
+    db.create_all()
 
 ## <<<<<< Creating DB on both Sqlite and Postresql >>>>>>>
 # Create tables if running in a local environment
