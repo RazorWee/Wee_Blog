@@ -47,7 +47,9 @@
         a) ##CONNECT TO DB <<<< For sqlite only >>>>>
         b) ## <<<<< Creating DB on Sqlite >>>>>>>
 
-
+7) email-validator
+    - pip install email-validator
+    - manually add "email-validator==2.1.0.post1 into requirements.txt
 
 '''
 from flask import Flask, render_template, redirect, url_for, flash, abort,request

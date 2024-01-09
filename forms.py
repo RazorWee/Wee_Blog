@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
-from wtforms.validators import DataRequired, URL, Email, Length, ValidationError
+from wtforms.validators import DataRequired, URL, Email, ValidationError
 from flask_ckeditor import CKEditorField
 import re
 # IMPT : To use bootstrap5 - do not install flask-bootstrap - install Bootstrap-Flask
