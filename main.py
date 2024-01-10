@@ -1,16 +1,34 @@
 '''
-<<< From Local to Remote >>>
-NOTE : In this version, we have changed email sending from using stmp to Sendgrid's Web API
+Version 1.0 (10 Jan 2024)
+
+=========================================================================================
+
+NOTE :
+1) In this version, we have changed email sending from using stmp to Sendgrid's Web API
 https://app.sendgrid.com/login?redirect_to=%2F
 
-NOTE: We are using Render.com as the web-hosting site
+2) We are using Render.com as the web-hosting site
 https://dashboard.render.com
 
-NOTE : Github :
+3) Github :
+https://github.com/RazorWee/Wee_Blog/tree/main
 
+==========================================================================================
+
+<<< To transfer files from local to Github >>>>
+
+1) After making the changes to the files, key this at terminal :    "git status" to check
+                                                                    "got add . " to add ALL files
+
+2) To commit the changes : key this at terminal : "git commit -m "short message"
+3) To transfer the commit to Github : Click <Git><Push> at Pycharm menu
+
+===========================================================================================
+
+<<< Changes made from Local version to Remote version >>>
 
 1) Environmental Variables
-    - import os, import dotenv import load_dotenv, load dotenv()
+    - In main.py : import os, import dotenv import load_dotenv, load dotenv()
     - create .env in terminal
     - key in all the secret variables in .env
 
@@ -42,7 +60,7 @@ NOTE : Github :
             Repository name : anything
             Remote : origin <-- do not change
             Description : anything
-    - * existng GitHub repo , just click "push"
+    - * existing GitHub repo , just click "push"
 
 5) gunicorn
     - pip install gunicorn
@@ -51,20 +69,37 @@ NOTE : Github :
 6) PostgreSQL
     - pip install psycopg2-binary
     - manually add "Psycopg2-binary==2.9.9" into requirements.txt
-    - modify 2 parts of main.py :
-        a) ##CONNECT TO DB <<<< For sqlite only >>>>>
-        b) ## <<<<< Creating DB on Sqlite >>>>>>>
+    - make 2 changes to main.py (see codes below) :
+        ## Change #1 - For sqlite only -- Connect to DB
+        ## Change #2 - For sqlite only -- Creating DB
 
 7) email-validator
     - pip install email-validator
     - manually add "email-validator==2.1.0.post1 into requirements.txt
 
-8) In Render.com :
+8) Replacing stmp email with Sendgrid's Web API email
+    - remove :  import smtplib
+                password = os.getenv("password")
+    - add :     import os
+                from sendgrid import SendGridAPIClient
+                from sendgrid.helpers.mail import Mail
+                SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    - ## Change #3 - Replace stmp with Web AI
+
+9) In Render.com :
     a) Set the environment variable for 1) DATABASE_URL 2)my_email 3)secret_key 4)SENDGRID_API_KEY
     b) In setting : gunicorn -w 4 -b 0.0.0.0:$PORT -t 240 main:app
 
+10) Delete :
+        1) poety.lock
+        2) pyproject.toml
+        3) in .env delete "password = XXX"
+
+11) Running the app locally and remotely
+    ## Change #4 - To run the program
 
 '''
+## ======= IMPORTS ======== ##
 from flask import Flask, render_template, redirect, url_for, flash, abort,request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
@@ -76,38 +111,38 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_wtf import CSRFProtect
 from functools import wraps
 import hashlib
-# import smtplib
-import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
 from dotenv import load_dotenv
 load_dotenv()
 from datetime import date
 post_date= date.today().strftime("%d %B %Y")
+# import smtplib # Note : we are using Web AI in this version , hence no need for smtplib
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-# IMPT : To use bootstrap5 - do not install flask-bootstrap - install Bootstrap-Flask
-
-# Access variables ===============
+## ======= KEY VARIABLES ======== ##
 my_email = os.getenv("my_email")
-# password = os.getenv("password")
+# password = os.getenv("password") # Remove this as we are not using stmp email but Web API
 secret_key = os.getenv("secret_key")
-SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-#===================================
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") # Obtain this API from Sendgrid in order to use Web API email
 
+## ======= APP ======== ##
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secret_key
 bootstrap = Bootstrap5(app)
 csrf=CSRFProtect(app)
 ckeditor = CKEditor(app)
 
-##CONNECT TO DB <<<< For sqlite only >>>>>
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db = SQLAlchemy(app)
+## Change #1 =================================================================================
+## Change #1 - For sqlite only -- Connect to DB
+'''
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+'''
 
-##CONNECT TO DB <<<< For both sqlite and postresql use >>>>>
-# Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
+## Change #1 - For both sqlite & Postregsql -- Connect to DB
+# Note : Check if DATABASE_URL environment variable is set (indicating PostgreSQL)
 
 if os.getenv('DATABASE_URL'):
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
@@ -116,24 +151,71 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-'''
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL",  "sqlite:///blog.db")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-'''
-############################
 
-## LOGIN-MANGAGER
+#============================================================================================
+
+## ======= LOGIN MANAGER ======== ##
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_message = "Please log-in first. Thank you !"
 login_manager.login_view = 'login' # In order for the above msg to work
 login_manager.login_message_category = "info"
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))   # get id from session,then retrieve user object from database
 
+## ======= CONFIGURE TABLES ======== ##
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(250), unique=True)
+    password = db.Column(db.String(250))
+    name = db.Column(db.String(100))
+    b_posts = db.relationship("BlogPost", back_populates="author", lazy=True)
+    comments = relationship("Comment", back_populates="comment_author", lazy=True)
+
+class BlogPost(db.Model):
+    __tablename__ = "blog_posts"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(250), unique=True, nullable=False)
+    subtitle = db.Column(db.String(250), nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    img_url = db.Column(db.String(250), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id")) #<- must use the table name eg. "users"
+    author = db.relationship("User", back_populates="b_posts")
+    comments = relationship("Comment", back_populates="parent_post", cascade="all, delete-orphan", passive_deletes=True, lazy=True)
+
+class Comment(db.Model):
+    __tablename__ = "comments"
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(250), nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # Must use the table name, e.g., "users"
+    comment_author = relationship("User", back_populates="comments")
+    post_id = db.Column(db.Integer,
+                        db.ForeignKey("blog_posts.id", ondelete="CASCADE", deferrable=True, initially="DEFERRED"),
+                        nullable=False)
+    parent_post = relationship("BlogPost", back_populates="comments")
+
+## Change #2 =================================================================================
+## Change #2 - For sqlite only -- Creating DB
+## Line below only required once, when creating sqlite DB.
+'''
+with app.app_context():
+    db.create_all()
+'''
+
+## Change #2 - For sqlite & Postregsql -- Creating DB
+## Line below only required once, when creating sqlite DB.
+'''
+if 'DATABASE_URL' not in os.environ:
+    with app.app_context():
+        db.create_all()
+'''
+
+## ======= FUNCTIONS ======== ##
+# Note : Also need to change in Index.html and Post.html ({%if current_user.id in [1, 2]%})
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -143,108 +225,18 @@ def admin_only(f):
         # otherwise continue with the route function
         return f(*args, **kwargs)
     return decorated_function
-# Note : Also need to change in Indext.html and Post.html ({%if current_user.id in [1, 2]%})
-
-#============================================
-
-##CONFIGURE TABLES
-## IMPT : Inside the database (blog.db), there are three tables - Blogposts,User and Comment.
-'''IMPT : As of July 2022, backref is considered legacy and back_populates is preferred.'''
-
-class User(UserMixin, db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(250), unique=True)
-    password = db.Column(db.String(250))
-    name = db.Column(db.String(100))
-
-    # Establishing User(Parent/One) - BlogPost(Child/Many)
-    b_posts = db.relationship("BlogPost", back_populates="author", lazy=True)
-    ## Below is the old method - backref
-    ## b_posts = db.relationship('BlogPost', backref='author', lazy=True)
-
-    # Establishing the User(Parent/One) - Comment(Child/Many)
-    comments = relationship("Comment", back_populates="comment_author", lazy=True)
-
-    # NOTE : One of the above use "db.relationship" , and the other does not :
-    ''' In summary, whether to use relationship or db.relationship depends on how
-        you've imported the function. If you've imported it directly from sqlalchemy.orm,
-        you can use relationship without the db prefix. If you've imported it using from
-        flask_sqlalchemy import SQLAlchemy, then you should use db.relationship to 
-        access it through the Flask-SQLAlchemy extension'''
 
 
-class BlogPost(db.Model):
-    __tablename__ = "blog_posts"
-    id = db.Column(db.Integer, primary_key=True)
-    #author = db.Column(db.String(250), nullable=False) ## IMPT - This has been replaced using the relationship link with User
-    title = db.Column(db.String(250), unique=True, nullable=False)
-    subtitle = db.Column(db.String(250), nullable=False)
-    date = db.Column(db.String(250), nullable=False)
-    body = db.Column(db.Text, nullable=False)
-    img_url = db.Column(db.String(250), nullable=False)
-
-    # Establishing the BlogPost(Child/Many) - User(Parent/One)
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id")) #<- must use the table name eg. "users"
-    author = db.relationship("User", back_populates="b_posts")
-    ## ## Below is the old method - backref
-    ##author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
-    # Establishing the BlogPost(Parent/One) - Comment(Child/Many)
-    comments = relationship("Comment", back_populates="parent_post", cascade="all, delete-orphan", passive_deletes=True, lazy=True)
-
-class Comment(db.Model):
-    __tablename__ = "comments"
-    id = db.Column(db.Integer, primary_key=True)
-    text = db.Column(db.Text, nullable=False)
-    date = db.Column(db.String(250), nullable=False)
-
-    # Establishing the Comment(Child/Many) - User(Parent/One)
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id"))  # Must use the table name, e.g., "users"
-    comment_author = relationship("User", back_populates="comments")
-
-    # Establishing the Comment(Child/Many) - BlogPost(Parent/One)
-    post_id = db.Column(db.Integer,
-                        db.ForeignKey("blog_posts.id", ondelete="CASCADE", deferrable=True, initially="DEFERRED"),
-                        nullable=False)
-    parent_post = relationship("BlogPost", back_populates="comments")
-
-
-'''
-    # Establishing the Comment(Child/Many) - User(Parent/One)
-    author_id = db.Column(db.Integer, db.ForeignKey("users.id")) #<- must use the table name eg. "users"
-    comment_author = relationship("User", back_populates="comments")
-
-    # Establishing the Comment(Child/Many) - BlogPost(Parent/One)
-    post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id", ondelete="CASCADE"), nullable=False)
-    parent_post = relationship("BlogPost", back_populates="comments")
-
-'''
-
-
-
-## <<<<< Creating DB on Sqlite >>>>>>>
-## Line below only required once, when creating DB.
-# with app.app_context():
-#     db.create_all()
-
-## <<<<<< Creating DB on both Sqlite and Postresql >>>>>>>
-# Create tables if running in a local environment
-
-# if 'DATABASE_URL' not in os.environ:
-#     with app.app_context():
-#         db.create_all()
-
-#####################################################
-# To replace "from flask_gravatar import Gravatar "
-# For more details and options , see https://docs.gravatar.com/general/images/
 def gravatar_url(email, size=150, rating='g', default='identicon', force_default=False):
     hash_value = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
     return f"https://www.gravatar.com/avatar/{hash_value}?s={size}&d={default}&r={rating}&f={force_default}"
 
 app.jinja_env.filters['gravatar'] = gravatar_url
-######################################################
 
+
+######################################################################################
+#                                   MAIN PROGRAM                                     #
+######################################################################################
 
 @app.route('/')
 def get_all_posts():
@@ -339,15 +331,9 @@ def show_post(post_id):
     requested_post = BlogPost.query.get(post_id)
 
     if form.validate_on_submit():
-        ## Note this part is made redundant as we have make the textbox disappear in the post.html
-        # if not current_user.is_authenticated:
-        #     flash("You need to login or register to comment.")
-        #     return redirect(url_for('login'))
 
         new_comment = Comment(
             text = form.comment_text.data,
-            # author_id = current_user.id,
-            # post_id = post_id,
             comment_author=current_user,
             parent_post=requested_post,
             date = post_date
@@ -387,14 +373,12 @@ def edit_post(post_id):
         title=post.title,
         subtitle=post.subtitle,
         img_url=post.img_url,
-        #author_id=current_user.id, # # Change to whoever is editing
         body=post.body
     )
     if edit_form.validate_on_submit():
         post.title = edit_form.title.data
         post.subtitle = edit_form.subtitle.data
         post.img_url = edit_form.img_url.data
-        #post.author_id = current_user.id # # Change to whoever is editing
         post.body = edit_form.body.data
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
@@ -405,8 +389,6 @@ def edit_post(post_id):
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
-    # comment_to_delete = Comment.query.get(post_id)
-    # db.session.delete(comment_to_delete)
     post_to_delete = BlogPost.query.get(post_id)
     db.session.delete(post_to_delete)
     db.session.commit()
@@ -445,6 +427,19 @@ def contact():
     else:
         return render_template("contact.html", msg_sent=False)
 
+## Change #3 =================================================================================
+## Change #3 - Using Smtp email :
+'''
+def send_email(name, email, phone, message):
+    message = f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}\n Message: {message}"
+    with smtplib.SMTP("smtp.gmail.com") as connection:
+        connection.starttls()
+        connection.login(user=my_email, password=password)
+        connection.sendmail(from_addr=my_email, to_addrs=my_email,
+                            msg= message
+                            )
+'''
+## Change #3 - Using WEB API email :
 def send_email(name,email,phone,message):
     message = Mail(
         from_email=my_email,
@@ -461,22 +456,19 @@ def send_email(name,email,phone,message):
         print(e.message)
 
 
+## Change #4 =================================================================================
+## Change #4 - For locally only
+'''
+if __name__ == "__main__":
+app.debug = True
+app.run(host='0.0.0.0', port=5000)
+'''
 
-
-    # message = f"Subject : New Message\n\nName : {name}\nEmail: {email}\nPhone: {phone}\n Message: {message}"
-    # with smtplib.SMTP("smtp.gmail.com") as connection:
-    #     connection.starttls()
-    #     connection.login(user=my_email, password=password)
-    #     connection.sendmail(from_addr=my_email, to_addrs=my_email,
-    #                         msg= message
-    #                         )
-
-
-#When you run the script directly (python main.py),
-# it starts the Flask development server. When deployed on Render with Gunicorn,
-# the if __name__ == "__main__": block is ignored, and Gunicorn is used to serve the application.
+## Change#4 - To run locally and remotely
+## Below statement is not needed when deployed remotely on Render.com with Gunicorn.
+## When run remotely using Gunicorn, the 'if __name__ == "__main__"' is ignored.
+## The debugging mode (debug=True) is generally not recommended for production deployments as it can expose sensitive information and impact performance.
 if __name__ == "__main__":
     app.run(debug=True)
-    # app.debug = True
-    # app.run(host='0.0.0.0', port=5000)
-
+else:
+    app.debug = False
