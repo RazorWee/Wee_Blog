@@ -1,5 +1,13 @@
 '''
 <<< From Local to Remote >>>
+NOTE : In this version, we have changed email sending from using stmp to Sendgrid's Web API
+https://app.sendgrid.com/login?redirect_to=%2F
+
+NOTE: We are using Render.com as the web-hosting site
+https://dashboard.render.com
+
+NOTE : Github :
+
 
 1) Environmental Variables
     - import os, import dotenv import load_dotenv, load dotenv()
@@ -50,6 +58,11 @@
 7) email-validator
     - pip install email-validator
     - manually add "email-validator==2.1.0.post1 into requirements.txt
+
+8) In Render.com :
+    a) Set the environment variable for 1) DATABASE_URL 2)my_email 3)secret_key 4)SENDGRID_API_KEY
+    b) In setting : gunicorn -w 4 -b 0.0.0.0:$PORT -t 240 main:app
+
 
 '''
 from flask import Flask, render_template, redirect, url_for, flash, abort,request
