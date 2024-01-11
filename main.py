@@ -1,5 +1,5 @@
 '''
-Version 1.0 (10 Jan 2024)
+Version 1.1 (11 Jan 2024) - Delete User
 
 =========================================================================================
 
@@ -109,6 +109,8 @@ from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_wtf import CSRFProtect
+from flask_wtf import FlaskForm
+from wtforms import HiddenField
 from functools import wraps
 import hashlib
 from dotenv import load_dotenv
@@ -226,6 +228,8 @@ def admin_only(f):
         return f(*args, **kwargs)
     return decorated_function
 
+class DeleteUserForm(FlaskForm):
+    csrf_token = HiddenField()
 
 def gravatar_url(email, size=150, rating='g', default='identicon', force_default=False):
     hash_value = hashlib.md5(email.lower().encode('utf-8')).hexdigest()
@@ -238,25 +242,8 @@ app.jinja_env.filters['gravatar'] = gravatar_url
 #                                   MAIN PROGRAM                                     #
 ######################################################################################
 
-@app.route('/')
-def get_all_posts():
-    posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts, current_user=current_user)
 
-
-@app.route('/author/<int:author_id>')
-def get_posts_by_author(author_id):
-    print(f"Received Author ID: {author_id}")
-    # Assuming you have a User model and a BlogPost model
-    user = User.query.get(author_id)
-    if user:
-        posts = user.blog_posts  # Access the lazy-loaded blog posts
-        return render_template("index.html", all_posts=posts, current_user=current_user, author=user)
-    else:
-        # Handle the case when the user with the specified ID is not found
-        return render_template("author_not_found.html")
-
-
+##### User  #####
 @app.route('/register', methods=['GET','POST'])
 def register():
     form = RegisterForm()
@@ -323,6 +310,57 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
+
+
+# Route to delete a user
+@app.route('/delete_user/<int:user_id>', methods=['GET', 'POST'])
+@admin_only
+def delete_user(user_id):
+    user_to_delete = User.query.get(user_id)
+
+    if not user_to_delete:
+        flash('User not found', 'danger')
+        return redirect(url_for('get_all_posts'))
+
+    form = DeleteUserForm()
+
+    if request.method == 'POST' and form.validate_on_submit():
+        # Delete associated comments
+        comments_to_delete = Comment.query.filter_by(author_id=user_id).all()
+        for comment in comments_to_delete:
+            db.session.delete(comment)
+
+        # Delete the user
+        db.session.delete(user_to_delete)
+        db.session.commit()
+
+        flash('User and associated comments deleted successfully!', 'success')
+        return redirect(url_for('get_all_posts'))
+
+    # Populate the CSRF token in the form
+    form.csrf_token.data = form.csrf_token._value()
+
+    return render_template('delete_user.html', user=user_to_delete, form=form)
+
+
+##### Posts #####
+@app.route('/')
+def get_all_posts():
+    posts = BlogPost.query.all()
+    return render_template("index.html", all_posts=posts, current_user=current_user)
+
+
+@app.route('/author/<int:author_id>')
+def get_posts_by_author(author_id):
+    print(f"Received Author ID: {author_id}")
+    # Assuming you have a User model and a BlogPost model
+    user = User.query.get(author_id)
+    if user:
+        posts = user.blog_posts  # Access the lazy-loaded blog posts
+        return render_template("index.html", all_posts=posts, current_user=current_user, author=user)
+    else:
+        # Handle the case when the user with the specified ID is not found
+        return render_template("author_not_found.html")
 
 
 @app.route("/post/<int:post_id>",methods=["GET", "POST"])
@@ -394,6 +432,8 @@ def delete_post(post_id):
     db.session.commit()
     return redirect(url_for('get_all_posts'))
 
+
+##### Comments #####
 @app.route('/delete_comment/<int:comment_id>', methods=['GET','POST'])
 @login_required  # Ensure only authenticated users can delete comments
 def delete_comment(comment_id):
@@ -408,11 +448,13 @@ def delete_comment(comment_id):
     return redirect(url_for('show_post', post_id=comment.post_id))
 
 
+###### About #####
 @app.route("/about")
 def about():
     return render_template("about.html",current_user=current_user)
 
 
+##### Contact ######
 @csrf.exempt
 @app.route("/contact", methods=['GET','POST'])
 def contact():
@@ -455,6 +497,8 @@ def send_email(name,email,phone,message):
     except Exception as e:
         print(e.message)
 
+
+##### Run App #####
 
 ## Change #4 =================================================================================
 ## Change #4 - For locally only
