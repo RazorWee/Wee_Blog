@@ -1,0 +1,57 @@
+
+{% include "header.html" %}
+
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url({{ url_for('static', filename='img/admin_user.jpg')}})">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="page-heading">
+            <h1>List of Users</h1>
+            <span class="subheading">We are growing !!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+
+
+          {% block content %}
+              <!-- Your existing content here -->
+
+              <h1>Admin - Users</h1>
+              <table class="table">
+                  <thead>
+                      <tr>
+                          <th>Name</th>
+                          <th>Email</th>
+                          <th>Action</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      {% for user in users %}
+                          <tr>
+                              <td>{{ user.name }}</td>
+                              <td>{{ user.email }}</td>
+                              <td>
+
+                                <a href="{{ url_for('delete_user', user_id=user.id) }}" class="btn btn-danger">Delete</a>
+
+                              </td>
+                          </tr>
+                      {% endfor %}
+                  </tbody>
+              </table>
+          {% endblock %}
+
+
+        </div>
+    </div>
+</div>
+
+

@@ -1,5 +1,5 @@
 '''
-Version 1.1 (11 Jan 2024) - Delete User
+Version 1.2 (12 Jan 2024) - Delete User and List Users
 
 =========================================================================================
 
@@ -341,6 +341,22 @@ def delete_user(user_id):
     form.csrf_token.data = form.csrf_token._value()
 
     return render_template('delete_user.html', user=user_to_delete, form=form)
+
+
+# List of Users
+@app.route('/admin/users', methods=['GET', 'POST'])
+@admin_only
+def admin_users():
+    users = User.query.all()  # Fetch all users from the database
+    form = DeleteUserForm()  # Instantiate the DeleteUserForm
+
+    if request.method == 'POST':
+        user_id_to_delete = request.form.get('user_id')
+        if user_id_to_delete:
+            user_to_delete = User.query.get(user_id_to_delete)
+            return render_template('delete_user.html', user=user_to_delete, form=form)
+
+    return render_template('admin_users.html', users=users, form=form)
 
 
 ##### Posts #####

@@ -87,7 +87,7 @@
                         {% if current_user.is_authenticated %}
                             {% if current_user.id in [1, 2] %}
                                 <a href="{{url_for('delete_user', user_id=comment.comment_author.id)}}">
-                                  <button type="button" class="btn btn-warning btn_width m-t-10 m-r-10" style="border-radius: 30px;">Delete User ❌</button>
+                                  <button type="button" class="btn btn-warning btn-sleek" style="border-radius: 15px; padding: 5px 15px;">Delete User ❌</button>
                                 </a>
                             {% endif %}
                         {% endif %}
