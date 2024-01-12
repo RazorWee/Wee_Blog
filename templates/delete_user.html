@@ -31,7 +31,7 @@
 
             <form method="POST" action="{{ url_for('delete_user', user_id=user.id) }}">
                 {{ form.csrf_token }}
-                <button type="button" class="btn btn-warning btn-sleek" style="border-radius: 15px; padding: 5px 15px;"
+                <button type="submit" class="btn btn-warning btn-sleek" style="border-radius: 15px; padding: 5px 15px;"
                         onclick="return confirm('Are you sure you want to delete this user?')">Delete User ❌</button>
             </form>
         </div>

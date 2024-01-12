@@ -57,6 +57,14 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
           </li>
+
+          {% if current_user.is_authenticated and current_user.id in [1, 2] %}
+          <!-- Add the following block to display the "Users" tab for administrators -->
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
+          </li>
+          {% endif %}
+
           {% endif %}
 
           <li class="nav-item">
