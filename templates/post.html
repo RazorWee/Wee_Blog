@@ -76,7 +76,7 @@
                     </div>
                     <div class="commentText">
                       {{comment.text | safe}}
-                      <span class="date sub-text">Posted by {{comment.comment_author.name}} on {{post.date}}</span>
+                      <span class="date sub-text">Posted by {{comment.comment_author.name}} on {{comment.date}}</span>
 
                         {% if current_user.is_authenticated %}
                             {% if current_user.id in [1, 2] or current_user.id == comment.comment_author.id %}
