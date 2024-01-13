@@ -1,6 +1,6 @@
 '''
-Version 1.2 (12 Jan 2024) - Delete User and List Users
-
+Version 1.3 (13 Jan 2024) - Show only posts relating to a single administrator
+Version 1.2 (12 Jan 2024) - Delete User + List Users
 =========================================================================================
 
 NOTE :
@@ -372,7 +372,7 @@ def get_posts_by_author(author_id):
     # Assuming you have a User model and a BlogPost model
     user = User.query.get(author_id)
     if user:
-        posts = user.blog_posts  # Access the lazy-loaded blog posts
+        posts = user.b_posts  # Access the lazy-loaded blog posts
         return render_template("index.html", all_posts=posts, current_user=current_user, author=user)
     else:
         # Handle the case when the user with the specified ID is not found
