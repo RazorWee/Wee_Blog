@@ -2,10 +2,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=flask
 
 ### Flask ###
-instance/*
+instance/
 !instance/.gitignore
 .webassets-cache
-instance/
 .idea/
 .env
 .DS_Store

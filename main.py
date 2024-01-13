@@ -1,5 +1,5 @@
 '''
-Version 1.4 (14 Jan 2024) - shorten admin_user route, direct to delete_user route after deleting user, gitignore include .idea, instance/
+Version 1.4.1 (14 Jan 2024) - shorten admin_user route, direct to delete_user route after deleting user, gitignore include .idea, instance/
 Version 1.3 (13 Jan 2024) - Show only posts relating to a single administrator
 Version 1.2 (12 Jan 2024) - Delete User + List Users
 =========================================================================================
