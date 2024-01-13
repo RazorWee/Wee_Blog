@@ -26,6 +26,22 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="alert alert-info text-center">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+
+
+
             {{ post.body|safe }}
           <hr>
           <!-- if user is either 1 or 2 then can see Edit button -->
@@ -56,17 +72,6 @@
 
          <div style="margin-bottom: 50px;">{# Adjust the margin as needed #}</div>
           <div class="col-lg-8 col-md-10 mx-auto comment">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="flash-messages">
-                        {% for message in messages %}
-                            <div class="alert alert-info text-center">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
 
             {% for comment in post.comments %}
               <ul class="commentList">
