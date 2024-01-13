@@ -1,4 +1,5 @@
 '''
+Version 1.4 (14 Jan 2024) - shorten admin_user route, direct to delete_user route after deleting user, gitignore include .idea, instance/
 Version 1.3 (13 Jan 2024) - Show only posts relating to a single administrator
 Version 1.2 (12 Jan 2024) - Delete User + List Users
 =========================================================================================
@@ -36,7 +37,11 @@ https://github.com/RazorWee/Wee_Blog/tree/main
     - create .gitignore
     - go to gitignore.io website and key in "Flask"
     - copy all text and paste into .gitignore
-    - Ensure these files are included :  .env , .DS_Store
+    - Ensure these files and directory are included :
+                instance/
+                .idea/
+                .env
+                .DS_Store
 
 3) Git
     - git init (initialise a Git)
@@ -320,7 +325,7 @@ def delete_user(user_id):
 
     if not user_to_delete:
         flash('User not found', 'danger')
-        return redirect(url_for('get_all_posts'))
+        return redirect(url_for('admin_users'))
 
     form = DeleteUserForm()
 
@@ -335,7 +340,7 @@ def delete_user(user_id):
         db.session.commit()
 
         flash('User and associated comments deleted successfully!', 'success')
-        return redirect(url_for('get_all_posts'))
+        return redirect(url_for('admin_users'))
 
     # Populate the CSRF token in the form
     form.csrf_token.data = form.csrf_token._value()
@@ -351,10 +356,7 @@ def admin_users():
     form = DeleteUserForm()  # Instantiate the DeleteUserForm
 
     if request.method == 'POST':
-        user_id_to_delete = request.form.get('user_id')
-        if user_id_to_delete:
-            user_to_delete = User.query.get(user_id_to_delete)
-            return render_template('delete_user.html', user=user_to_delete, form=form)
+        return render_template('delete_user.html', user=request.form.get('user_id'), form=form)
 
     return render_template('admin_users.html', users=users, form=form)
 
